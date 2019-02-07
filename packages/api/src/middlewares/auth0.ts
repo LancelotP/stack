@@ -1,25 +1,22 @@
-import * as express from "express";
 import * as jwt from "express-jwt";
 import * as jwks from "jwks-rsa";
+import { RequestHandler } from "express-serve-static-core";
 
-export function applyAuth0Middleware(app: express.Application) {
-  app.use(
-    jwt({
-      secret: jwks.expressJwtSecret({
-        cache: true,
-        rateLimit: true,
-        jwksRequestsPerMinute: 5,
-        jwksUri: process.env.AUTH0_JWKS_URI
-      }),
-      credentialsRequired: false,
-      audience: process.env.AUTH0_AUDIENCE,
-      issuer: process.env.AUTH0_ISSUER,
-      algorithms: ["RS256"]
+export function auth0Middleware(params: {
+  audience: string;
+  issuer: string;
+  jwksUri: string;
+}): RequestHandler {
+  return jwt({
+    secret: jwks.expressJwtSecret({
+      cache: true,
+      rateLimit: true,
+      jwksRequestsPerMinute: 5,
+      jwksUri: params.jwksUri
     }),
-    // @ts-ignore
-    (err, req, res, next) => {
-      // middleware used to prevent tokenExpired errors
-      next();
-    }
-  );
+    credentialsRequired: false,
+    audience: params.audience,
+    issuer: params.issuer,
+    algorithms: ["RS256"]
+  });
 }

@@ -1,18 +1,30 @@
 import * as express from "express";
-import { createConnection, Connection, Tree } from "typeorm";
+import { createConnection, Connection, Tree, EntitySchema } from "typeorm";
 import { createServer, Server } from "http";
-import { logInfo, logError, initLogger } from "./utils/logger";
 import * as Redis from "ioredis";
+import * as Sentry from "@sentry/node";
+
+import { logInfo, logError, initLogger } from "./utils/logger";
+
 import {
   setServerStatus,
   applyHealthCheckMiddleware
 } from "./middlewares/healthcheck";
-import { applyAuth0Middleware } from "./middlewares/auth0";
-import { applyContextMiddleware } from "./middlewares/context";
-import { applyGraphqlMiddleware } from "./middlewares/graphql";
+import { auth0Middleware } from "./middlewares/auth0";
+import { contextMiddlware } from "./middlewares/context";
+import { graphqlMiddleware } from "./middlewares/graphql";
+
+import { User } from "./models/user.entity";
+import { File } from "./models/file.entity";
+
+const entities = [User, File];
 
 export async function startServer(port: number, pid?: number) {
   initLogger(pid);
+
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN
+  });
 
   const app = express();
   const server = createServer(app);
@@ -29,9 +41,10 @@ export async function startServer(port: number, pid?: number) {
       url: process.env.DATABASE_URL,
       synchronize: process.env.NODE_ENV !== "production",
       migrationsRun: process.env.NODE_ENV === "production",
-      entities: [`${__dirname}/models/**/*.entity.*?s`],
+      entities,
       migrations: [`${__dirname}/migrations/**\.*?s`]
     });
+
     logInfo("postgres connection initiated");
   } catch (e) {
     logError.extend("postgres")(e);
@@ -68,19 +81,33 @@ export async function startServer(port: number, pid?: number) {
    * MIDDLEWARE INITIALISATION
    */
 
+  app.use(Sentry.Handlers.requestHandler());
+  logInfo("sentry request handler applied");
+
   applyHealthCheckMiddleware(app, processes, pid);
   logInfo("healthcheck middleware applied");
 
-  applyAuth0Middleware(app);
+  app.use(
+    auth0Middleware({
+      audience: process.env.AUTH0_AUDIENCE,
+      issuer: process.env.AUTH0_ISSUER,
+      jwksUri: process.env.AUTH0_JWKS_URI
+    })
+  );
   logInfo("auth0 middleware applied");
 
-  applyContextMiddleware(app, {
-    entities: `${__dirname}/models/**/*.entity.*?s`
-  });
+  app.use(
+    contextMiddlware({
+      entities: connection!.entityMetadatas
+    })
+  );
   logInfo("context middleware applied");
 
-  applyGraphqlMiddleware(app);
+  app.use(graphqlMiddleware());
   logInfo("graphql middleware applied");
+
+  app.use(Sentry.Handlers.errorHandler());
+  logInfo("sentry error handler applied");
 
   logInfo("middlewares applied");
 

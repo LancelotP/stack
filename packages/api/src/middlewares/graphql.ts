@@ -1,5 +1,5 @@
-import { Application } from "express";
+import { RequestHandler } from "express-unless";
 
-export function applyGraphqlMiddleware(app: Application) {
-  return;
+export function graphqlMiddleware(): RequestHandler {
+  return () => {};
 }

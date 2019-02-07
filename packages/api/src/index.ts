@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { startServer } from "./server";
 import * as throng from "throng";
 import debug from "debug";
@@ -13,6 +14,7 @@ declare global {
       AUTH0_JWKS_URI: string;
       AUTH0_AUDIENCE: string;
       AUTH0_ISSUER: string;
+      SENTRY_DSN?: string;
     }
   }
   // namespace Express {
