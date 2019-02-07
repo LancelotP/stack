@@ -1,5 +1,5 @@
 import * as express from "express";
-import { createConnection, Connection, Tree, EntitySchema } from "typeorm";
+import { createConnection, Connection } from "typeorm";
 import { createServer, Server } from "http";
 import * as Redis from "ioredis";
 import * as Sentry from "@sentry/node";
@@ -11,13 +11,10 @@ import {
   applyHealthCheckMiddleware
 } from "./middlewares/healthcheck";
 import { auth0Middleware } from "./middlewares/auth0";
-import { contextMiddlware } from "./middlewares/context";
 import { graphqlMiddleware } from "./middlewares/graphql";
 
-import { User } from "./models/user.entity";
-import { File } from "./models/file.entity";
-
-const entities = [User, File];
+import entities from "./models";
+import { generateContext } from "./middlewares/context";
 
 export async function startServer(port: number, pid?: number) {
   initLogger(pid);
@@ -41,7 +38,8 @@ export async function startServer(port: number, pid?: number) {
       url: process.env.DATABASE_URL,
       synchronize: process.env.NODE_ENV !== "production",
       migrationsRun: process.env.NODE_ENV === "production",
-      entities,
+      // @ts-ignore
+      entities: Object.keys(entities).map(key => entities[key]),
       migrations: [`${__dirname}/migrations/**\.*?s`]
     });
 
@@ -96,12 +94,14 @@ export async function startServer(port: number, pid?: number) {
   );
   logInfo("auth0 middleware applied");
 
-  app.use(
-    contextMiddlware({
-      entities: connection!.entityMetadatas
-    })
-  );
-  logInfo("context middleware applied");
+  // app.use(
+  //   contextMiddlware({
+  //     entities: connection!.entityMetadatas
+  //   })
+  // );
+  const foo = generateContext(entities);
+
+  foo.logInfo("context middleware applied");
 
   app.use(graphqlMiddleware());
   logInfo("graphql middleware applied");
