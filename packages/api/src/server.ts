@@ -21,7 +21,7 @@ export async function startServer(port: number, pid?: number) {
 
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
-    release: "30fc63e8c4f24a85ea6b3ff4c68e6d0b1a012448",
+    release: "d34d07daa9db6fe406a56e48c480b215afa491d7",
     integrations: [
       new Sentry.Integrations.RewriteFrames({
         root: global.__rootdir__

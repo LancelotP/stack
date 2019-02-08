@@ -23,7 +23,7 @@ export async function applyGraphqlMiddleware(app: Application) {
     uploads: false,
     context: ({ req }: { req: Request }) => req.ctx,
     formatError: (error: ApolloError) => {
-      const sentryReport = Sentry.captureException(error);
+      const sentryReport = Sentry.captureException(error.originalError);
 
       logError.extend("graphql")(
         JSON.stringify(
