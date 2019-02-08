@@ -7,7 +7,7 @@
     "upgrade-interactive": "npm-check --update",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm run build:typescript && npm run build:graphql",
-    "build:typescript": "tsc -p .",
+    "build:typescript": "tsc -p tsconfig.production.json",
     "build:graphql": "copyfiles -u 1 --verbose \"./src/__generated__/*.graphql\" ./build"
   },
   "dependencies": {

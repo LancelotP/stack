@@ -20,7 +20,12 @@ export async function startServer(port: number, pid?: number) {
   initLogger(pid);
 
   Sentry.init({
-    dsn: process.env.SENTRY_DSN
+    dsn: process.env.SENTRY_DSN,
+    integrations: [
+      new Sentry.Integrations.RewriteFrames({
+        root: global.__rootdir__
+      })
+    ]
   });
 
   const app = express();
@@ -38,8 +43,9 @@ export async function startServer(port: number, pid?: number) {
       url: process.env.DATABASE_URL,
       synchronize: process.env.NODE_ENV !== "production",
       migrationsRun: process.env.NODE_ENV === "production",
-      // @ts-ignore
-      entities: Object.keys(entities).map(key => entities[key]),
+      entities: Object.keys(entities).map(
+        key => entities[key as keyof typeof entities]
+      ),
       migrations: [`${__dirname}/migrations/**\.*?s`]
     });
 

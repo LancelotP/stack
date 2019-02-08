@@ -12,7 +12,6 @@
     "removeComments": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "sourceMap": true,
     "outDir": "./build",
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true

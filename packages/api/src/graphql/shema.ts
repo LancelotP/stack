@@ -8,10 +8,10 @@ export const resolvers: IResolvers = {
   },
   User: {
     firstName: _ => _.firstName || null,
-    lastName: _ => _.lastName || null,
-    email: _ => {
-      throw new Error("je crash dans email");
-    }
+    lastName: _ => {
+      throw new Error("Je crash sur lastname");
+    },
+    email: _ => _.email || null
   },
   Mutation: {},
   Subscription: {},

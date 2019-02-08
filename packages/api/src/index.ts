@@ -18,6 +18,9 @@ declare global {
       SENTRY_DSN?: string;
       APOLLO_ENGINE_API_KEY?: string;
     }
+    interface Global {
+      __rootdir__: string;
+    }
   }
   namespace Express {
     interface Request {
@@ -25,6 +28,8 @@ declare global {
     }
   }
 }
+
+global.__rootdir__ = __dirname || process.cwd();
 
 debug.enable("fzl*");
 
