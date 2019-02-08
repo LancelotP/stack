@@ -13,4 +13,4 @@ npx sentry-cli releases set-commits --auto $VERSION
 
 npx sentry-cli releases files $VERSION upload-sourcemaps ./packages/api/build --rewrite
 
-# # TODO HANDLE SENTRY DEPLOYMENTS
+# # TODO HANDLE SENTRY DEPLOYMENT
