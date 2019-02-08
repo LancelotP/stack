@@ -7,4 +7,13 @@ export class User {
 
   @Column({ unique: true })
   sub: string;
+
+  @Column({ nullable: true })
+  email?: string;
+
+  @Column({ nullable: true })
+  firstName?: string;
+
+  @Column({ nullable: true })
+  lastName?: string;
 }

@@ -22,6 +22,12 @@ export interface Query {
 
 export interface User {
   id: number;
+
+  email: Maybe<string>;
+
+  firstName: Maybe<string>;
+
+  lastName: Maybe<string>;
 }
 
 export interface Mutation {
@@ -117,10 +123,31 @@ export namespace QueryResolvers {
 export namespace UserResolvers {
   export interface Resolvers<Context = FZLContext, TypeParent = User> {
     id?: IdResolver<number, TypeParent, Context>;
+
+    email?: EmailResolver<Maybe<string>, TypeParent, Context>;
+
+    firstName?: FirstNameResolver<Maybe<string>, TypeParent, Context>;
+
+    lastName?: LastNameResolver<Maybe<string>, TypeParent, Context>;
   }
 
   export type IdResolver<
     R = number,
+    Parent = User,
+    Context = FZLContext
+  > = Resolver<R, Parent, Context>;
+  export type EmailResolver<
+    R = Maybe<string>,
+    Parent = User,
+    Context = FZLContext
+  > = Resolver<R, Parent, Context>;
+  export type FirstNameResolver<
+    R = Maybe<string>,
+    Parent = User,
+    Context = FZLContext
+  > = Resolver<R, Parent, Context>;
+  export type LastNameResolver<
+    R = Maybe<string>,
     Parent = User,
     Context = FZLContext
   > = Resolver<R, Parent, Context>;

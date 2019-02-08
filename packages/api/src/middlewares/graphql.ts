@@ -3,12 +3,14 @@ import { Application, request, Request } from "express";
 import {
   ApolloServer,
   IResolvers,
-  PlaygroundConfig
+  PlaygroundConfig,
+  ApolloError
 } from "apollo-server-express";
 import { resolvers } from "../graphql/shema";
 import gql from "graphql-tag";
 import fetch from "node-fetch";
-import { generateContext } from "./context";
+import * as Sentry from "@sentry/node";
+import { logError } from "../utils/logger";
 
 const schema = gql(
   fs.readFileSync(`${__dirname}/../__generated__/schema.graphql`).toString()
@@ -20,6 +22,23 @@ export async function applyGraphqlMiddleware(app: Application) {
     typeDefs: schema,
     uploads: false,
     context: ({ req }: { req: Request }) => req.ctx,
+    formatError: (error: ApolloError) => {
+      const sentryReport = Sentry.captureException(error);
+
+      logError.extend("graphql")(
+        JSON.stringify(
+          {
+            message: error.message,
+            path: error.path,
+            sentryId: sentryReport
+          },
+          null,
+          process.env.NODE_ENV !== "production" ? 2 : 0
+        )
+      );
+
+      return error;
+    },
     engine: {
       apiKey: process.env.APOLLO_ENGINE_API_KEY
     },

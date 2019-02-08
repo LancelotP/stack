@@ -6,6 +6,13 @@ export const resolvers: IResolvers = {
   Query: {
     viewer: viewerQuery
   },
+  User: {
+    firstName: _ => _.firstName || null,
+    lastName: _ => _.lastName || null,
+    email: _ => {
+      throw new Error("je crash dans email");
+    }
+  },
   Mutation: {},
   Subscription: {},
   /**

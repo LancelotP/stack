@@ -1,4 +1,5 @@
 import * as Dataloader from "dataloader";
+import * as Sentry from "@sentry/node";
 import { getConnection, getRepository } from "typeorm";
 import { RequestHandler } from "express";
 
@@ -26,6 +27,17 @@ export function contextMiddleware(): RequestHandler {
       }
     } catch (e) {
       next(e);
+    }
+
+    if (viewer) {
+      Sentry.configureScope(scope => {
+        scope.setUser({
+          id: viewer!.id.toString(),
+          email: viewer!.email,
+          firstName: viewer!.firstName,
+          lastName: viewer!.lastName
+        });
+      });
     }
 
     req.ctx = generateContext(viewer);
