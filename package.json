@@ -2,5 +2,17 @@
   "name": "share-review",
   "private": true,
   "version": "0.0.0",
-  "description": ""
+  "description": "",
+  "scripts": {
+    "gen": "gql-gen --config codegen.yml"
+  },
+  "devDependencies": {
+    "graphql": "^14.1.1",
+    "graphql-code-generator": "^0.16.1",
+    "graphql-codegen-introspection": "^0.16.1",
+    "graphql-codegen-schema-ast": "^0.16.1",
+    "graphql-codegen-typescript-common": "^0.16.1",
+    "graphql-codegen-typescript-resolvers": "^0.16.1",
+    "graphql-codegen-typescript-server": "^0.16.1"
+  }
 }

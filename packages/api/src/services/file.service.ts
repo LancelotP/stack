@@ -1,16 +1,9 @@
 import { File } from "../models/file.entity";
-import { FindOneOptions, getRepository } from "typeorm";
+import { getRepository } from "typeorm";
+import { BaseService } from "./service";
 
-export class FileService {
-  constructor(private loaders: string[], private viewer?: File) {}
-
-  findOne(options: FindOneOptions<File>) {
-    return getRepository(File).findOne(options);
-  }
-
-  find(options: FindOneOptions<File>) {
-    return getRepository(File).find(options);
-  }
+export class FileService extends BaseService<File> {
+  repo = getRepository(File);
 
   async delete(fileId: number) {
     if (!this.viewer) {

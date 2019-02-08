@@ -1,0 +1,7 @@
+type User {
+  id: Int!
+}
+
+extend type Query {
+  viewer: User
+}

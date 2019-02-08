@@ -1,0 +1,22 @@
+scalar Date
+
+scalar DateTime
+
+type Mutation {
+  _empty: String
+}
+
+type Query {
+  _empty: String
+  viewer: User
+}
+
+type Subscription {
+  _empty: String
+}
+
+scalar Time
+
+type User {
+  id: Int!
+}

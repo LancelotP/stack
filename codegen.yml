@@ -1,0 +1,17 @@
+overwrite: true
+schema: "packages/api/src/graphql/**/*.graphql"
+documents: "packages/web/src/**/*.graphql"
+watch: true
+generates:
+  packages/api/src/__generated__/graphql.ts:
+    config:
+      avoidOptionals: true
+      contextType: ../middlewares/context#FZLContext
+      mappers:
+        User: ../models/user.entity#User
+    plugins:
+      - "typescript-common"
+      - "typescript-server"
+      - "typescript-resolvers"
+  packages/api/src/__generated__/schema.graphql:
+    - schema-ast

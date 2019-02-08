@@ -1,53 +1,103 @@
+import * as Dataloader from "dataloader";
+import { getConnection, getRepository } from "typeorm";
 import { RequestHandler } from "express";
-import {
-  EntityMetadata,
-  Connection,
-  ObjectType,
-  Repository,
-  getConnection
-} from "typeorm";
 
-import entities from "../models/index";
+import entities from "../models";
+import services from "../services";
+import { User } from "../models/user.entity";
 
-function generateLoaders(): { [P in keyof typeof entities]: Repository<InstanceType<typeof entities[P]>> } {
-  const foo: { [P in keyof typeof entities]: Repository<InstanceType<typeof entities[P]>> } = Object.create(null);
+export function contextMiddleware(): RequestHandler {
+  return async (req, res, next) => {
+    let viewer: FZLViewer;
+
+    try {
+      if (req.user && req.user.sub) {
+        viewer = await getRepository(User).findOne({
+          where: { sub: req.user.sub }
+        });
+
+        if (!viewer) {
+          const newUser = new User();
+
+          newUser.sub = req.user.sub;
+
+          viewer = await getRepository(User).save(newUser);
+        }
+      }
+    } catch (e) {
+      next(e);
+    }
+
+    req.ctx = generateContext(viewer);
+
+    next();
+  };
+}
+
+export type FZLContext = ReturnType<typeof generateContext>;
+export type FZLLoaders = ReturnType<typeof generateLoaders>;
+export type FZLServices = ReturnType<typeof generateServices>;
+export type FZLViewer = User | undefined;
+
+export function generateContext(viewer?: FZLViewer) {
+  const loaders = generateLoaders();
+  const services = generateServices(loaders, viewer);
+
+  return {
+    services,
+    viewer: viewer || null
+  };
+}
+
+function generateServices<S extends keyof typeof services>(
+  loaders: FZLLoaders,
+  viewer: FZLViewer
+) {
+  const map: {
+    [P in keyof typeof services]: InstanceType<typeof services[P]>
+  } = Object.create(null);
+
+  Object.keys(services).map((key: S) => {
+    // @ts-ignore
+    map[key] = new services[key](loaders, undefined);
+  });
+
+  return map;
+}
+
+function generateLoaders() {
+  const map: {
+    [P in keyof typeof entities]: Dataloader<
+      string | number,
+      InstanceType<typeof entities[P]>
+    >
+  } = Object.create(null);
 
   for (const key in entities) {
     if (entities.hasOwnProperty(key)) {
-      foo[key as keyof typeof entities] = getConnection().getRepository(entities[key as keyof typeof entities]);
+      map[key as keyof typeof entities] = new Dataloader(
+        createBatchFetch(entities[key as keyof typeof entities])
+      );
     }
   }
 
-  return foo;
+  return map;
 }
 
-const repos: { [P in keyof typeof entities]: Repository<InstanceType<typeof entities[P]>> } = {
-  File: getConnection().getRepository(entities.File),
-  User: getConnection().getRepository(entities.User)
-};
+function createBatchFetch<Entity extends { id: number | string }>(
+  repo: new () => Entity
+): Dataloader.BatchLoadFn<string | number, Entity> {
+  return async (keys: (string | number)[]) => {
+    const entities = await getConnection()
+      .getRepository<Entity>(repo)
+      .findByIds(keys);
 
-repos.
+    const entityMap: { [k: string]: Entity } = {};
 
-function createRepos() {
-  // @ts-ignore
-  const foo: {
-    [k in keyof typeof entities]: ReturnType<typeof createRepo>
-  } = {};
+    entities.forEach(entity => {
+      entityMap[entity.id] = entity;
+    });
 
-  // @ts-ignore
-  Object.keys(entities).map(
-    key => (foo[key] = createRepo<typeof entities[key]>(entities[key]))
-  );
-
-  return foo;
+    return keys.map(key => entityMap[key]);
+  };
 }
-
-function createRepo<Entity>(entity: new () => Entity): Repository<Entity> {
-  return getConnection().getRepository(entity);
-}
-
-// export function contextMiddlware<Entity>(
-//   repo: new () => Entity
-// ): Repository<Entity> {
-//   return getConnection().getRepository(repo);
-// }

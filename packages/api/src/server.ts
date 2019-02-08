@@ -11,10 +11,10 @@ import {
   applyHealthCheckMiddleware
 } from "./middlewares/healthcheck";
 import { auth0Middleware } from "./middlewares/auth0";
-import { graphqlMiddleware } from "./middlewares/graphql";
+import { applyGraphqlMiddleware } from "./middlewares/graphql";
 
 import entities from "./models";
-import { generateContext } from "./middlewares/context";
+import { contextMiddleware } from "./middlewares/context";
 
 export async function startServer(port: number, pid?: number) {
   initLogger(pid);
@@ -94,22 +94,18 @@ export async function startServer(port: number, pid?: number) {
   );
   logInfo("auth0 middleware applied");
 
-  // app.use(
-  //   contextMiddlware({
-  //     entities: connection!.entityMetadatas
-  //   })
-  // );
-  const foo = generateContext(entities);
+  app.use(contextMiddleware());
+  logInfo("context middleware applied");
 
-  foo.logInfo("context middleware applied");
-
-  app.use(graphqlMiddleware());
+  await applyGraphqlMiddleware(app);
   logInfo("graphql middleware applied");
 
   app.use(Sentry.Handlers.errorHandler());
   logInfo("sentry error handler applied");
 
   logInfo("middlewares applied");
+
+  app.get("/", (req, res) => res.send("Hello World!"));
 
   /**
    * SERVER START

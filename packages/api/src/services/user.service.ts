@@ -1,21 +1,9 @@
 import { User } from "../models/user.entity";
-import { FindOneOptions, getRepository } from "typeorm";
-import { FileService } from "./file.service";
+import { getRepository } from "typeorm";
+import { BaseService } from "./service";
 
-export class UserService {
-  private fileService: FileService;
-
-  constructor(private loaders: string[], private viewer?: User) {
-    this.fileService = new FileService(loaders, viewer);
-  }
-
-  findOne(options: FindOneOptions<User>) {
-    return getRepository(User).findOne(options);
-  }
-
-  find(options: FindOneOptions<User>) {
-    return getRepository(User).find(options);
-  }
+export class UserService extends BaseService<User> {
+  repo = getRepository(User);
 
   async delete(userId: number) {
     if (!this.viewer) {

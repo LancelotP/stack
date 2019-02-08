@@ -3,6 +3,7 @@ import { startServer } from "./server";
 import * as throng from "throng";
 import debug from "debug";
 import { logInfo, logError } from "./utils/logger";
+import { FZLContext } from "./middlewares/context";
 
 declare global {
   namespace NodeJS {
@@ -15,18 +16,20 @@ declare global {
       AUTH0_AUDIENCE: string;
       AUTH0_ISSUER: string;
       SENTRY_DSN?: string;
+      APOLLO_ENGINE_API_KEY?: string;
     }
   }
-  // namespace Express {
-  //   interface Request {
-  //     ctx: FZLContext;
-  //   }
-  // }
+  namespace Express {
+    interface Request {
+      ctx: FZLContext;
+    }
+  }
 }
 
 debug.enable("fzl*");
 
 const envVariables = [
+  "PORT",
   "DATABASE_URL",
   "WEB_CONCURRENCY",
   "AUTH0_JWKS_URI",
