@@ -7,13 +7,13 @@ export class UserService extends BaseService<User> {
 
   async delete(userId: number) {
     if (!this.viewer) {
-      throw new Error();
+      throw new Error("Not logged");
     }
 
     const user = await this.findOne({ where: { id: userId } });
 
     if (!user) {
-      throw new Error();
+      throw new Error("No user found");
     }
 
     await getRepository(User).remove(user);
