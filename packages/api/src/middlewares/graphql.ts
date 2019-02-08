@@ -6,7 +6,7 @@ import {
   PlaygroundConfig,
   ApolloError
 } from "apollo-server-express";
-import { resolvers } from "../graphql/shema";
+import { resolvers } from "../graphql/schema";
 import gql from "graphql-tag";
 import fetch from "node-fetch";
 import * as Sentry from "@sentry/node";
